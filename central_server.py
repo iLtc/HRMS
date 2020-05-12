@@ -3,14 +3,14 @@ import json
 
 
 class CentralServer(Node):
-    def __init__(self, max_peers, server_port, node_type, central_server_port=9999):
-        Node.__init__(self, max_peers, server_port, node_type, central_server_port)
+    def __init__(self, max_peers, server_port):
+        Node.__init__(self, max_peers, server_port, 'CENTRAL_SERVER', 9999)
 
         self.debug = True
 
-        self.addhandler("REGE", self.__handle_register, "Register a new node", False)
-        self.addhandler("UNRE", self.__handle_unregister, "Unregister a current node", True)
-        self.addhandler("LNOD", self.__handle_list_node, "List all available nodes", False)
+        self.addhandler("REGE", self.__handle_register, "Register a new node")
+        self.addhandler("UNRE", self.__handle_unregister, "Unregister a current node")
+        self.addhandler("LNOD", self.__handle_list_node, "List all available nodes")
 
         self.node_index = 0
         self.available_nodes = {}
@@ -24,7 +24,13 @@ class CentralServer(Node):
 
         data = json.loads(data)
 
-        self.available_nodes[self.node_index] = {'ip': data['ip'], 'port': data['port'], 'type': data['type']}
+        self.available_nodes[self.node_index] = {
+            'ip': data['ip'],
+            'port': data['port'],
+            'type': data['type'],
+            'desc': data['desc'],
+            'hide': data['hide']
+        }
 
         peer_conn.senddata("REGR", json.dumps({'id': self.node_index, 'status': 'success'}))
 
@@ -48,16 +54,26 @@ class CentralServer(Node):
     def __handle_list_node(self, peer_conn, data):
         self.peerlock.acquire()
 
-        peer_conn.senddata(
-            "LNOR",
-            json.dumps([{'id': id_,
-                         'ip': data['ip'],
-                         'port': data['port'],
-                         'type': data['type']} for id_, data in self.available_nodes.items()]))
+        nodes = {}
+
+        for id_, data in self.available_nodes.items():
+            if data['hide']:
+                continue
+
+            if data['type'] not in nodes:
+                nodes[data['type']] = {'desc': data['desc'], 'nodes': []}
+
+            nodes[data['type']]['nodes'].append({'id': id_,
+                                                 'ip': data['ip'],
+                                                 'port': data['port'],
+                                                 'type': data['type'],
+                                                 'desc': data['desc']})
+
+        peer_conn.senddata("LNOR", json.dumps(nodes))
 
         self.peerlock.release()
 
 
 if __name__ == '__main__':
-    cs = CentralServer(5, 9999, 'CENTRAL_SERVER')
+    cs = CentralServer(5, 9999)
     cs.mainloop()

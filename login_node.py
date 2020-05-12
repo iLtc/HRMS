@@ -3,19 +3,29 @@ import json
 
 
 class LoginNode(Node):
-    def __init__(self, max_peers, server_port, node_type, central_server_port=9999):
-        Node.__init__(self, max_peers, server_port, node_type, central_server_port)
+    def __init__(self, max_peers, server_port):
+        Node.__init__(self, max_peers, server_port, 'LOGIN', node_desc='Handle User Login and Logout')
 
         self.debug = True
 
-        self.node_type = node_type
+        self.addhandler(
+            'LOGI',
+            self.__handle_login,
+            'Allow a user to login',
+            has_parameters=self.__handle_login_parameters
+        )
 
-        self.addhandler('LOGI', self.__handle_login, 'Allow a user to login', True)
-        self.addhandler('LOGO', self.__handle_logout, 'Allow a user to logout', False)
+        self.addhandler('LOGO', self.__handle_logout, 'Allow a user to logout')
 
     def __debug(self, msg):
         if self.debug:
             self.btdebug(msg)
+
+    def __handle_login_parameters(self, peer_conn, data):
+        return {
+            'username': {'text': 'Username', 'required': True},
+            'password': {'text': 'Password', 'required': True}
+        }
 
     def __handle_login(self, peer_conn, data):
         self.peerlock.acquire()
@@ -33,11 +43,15 @@ class LoginNode(Node):
         self.peerlock.release()
 
     def __handle_logout(self, peer_conn, data):
-        pass
+        self.peerlock.acquire()
+
+        peer_conn.senddata('LOGR', json.dumps({'result': 'SUCCESS'}))
+
+        self.peerlock.release()
 
 
 if __name__ == '__main__':
-    ln = LoginNode(5, 9001, 'LOGIN')
+    ln = LoginNode(5, 9001)
 
     ln.mainloop()
 

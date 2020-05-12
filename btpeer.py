@@ -135,12 +135,12 @@ class BTPeer:
         t.start()
 
     # --------------------------------------------------------------------------
-    def addhandler(self, msgtype, handler, desc, has_parameters):
+    def addhandler(self, msgtype, handler, desc, has_parameters=None, hide_handler=False):
         # --------------------------------------------------------------------------
         """ Registers the handler for the given message type with this peer """
         assert len(msgtype) == 4
         self.handlers[msgtype] = handler
-        self.handlers_ext[msgtype] = {'desc': desc, 'has_parameters': has_parameters}
+        self.handlers_ext[msgtype] = {'desc': desc, 'has_parameters': has_parameters, 'hide': hide_handler}
 
     # --------------------------------------------------------------------------
     def addrouter(self, router):

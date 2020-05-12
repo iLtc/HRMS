@@ -3,7 +3,7 @@ import json
 
 
 class Node(BTPeer):
-    def __init__(self, max_peers, server_port, node_type, central_server_port=9999):
+    def __init__(self, max_peers, server_port, node_type, node_desc='', central_server_port=9999, hide_node=False):
         BTPeer.__init__(self, max_peers, server_port)
 
         self.debug = True
@@ -14,14 +14,25 @@ class Node(BTPeer):
 
         self.addrouter(self.__router)
 
-        self.addhandler('LMET', self.__handle_list_methods, 'List all methods for the current node', False)
+        self.addhandler(
+            'LMET',
+            self.__handle_list_methods,
+            'List all methods for the current node',
+            hide_handler=True
+        )
 
         if self.node_type != 'CENTRAL_SERVER':
             return_type, data = self.connectandsend(
                 self.serverhost,
                 central_server_port,
                 'REGE',
-                json.dumps({'ip': self.serverhost, 'port': self.serverport, 'type': self.node_type})
+                json.dumps({
+                    'ip': self.serverhost,
+                    'port': self.serverport,
+                    'type': self.node_type,
+                    'desc': node_desc,
+                    'hide': hide_node
+                })
             )[0]
 
             data = json.loads(data)
@@ -49,11 +60,18 @@ class Node(BTPeer):
     def __handle_list_methods(self, peer_conn, data):
         self.peerlock.acquire()
 
-        peer_conn.senddata(
-            "LMER",
-            json.dumps([{'msgtype': msgtype,
-                         'desc': self.handlers_ext[msgtype]['desc'],
-                         'has_parameters': self.handlers_ext[msgtype]['has_parameters']} for msgtype in self.handlers]))
+        methods = {}
+
+        for msgtype in self.handlers:
+            if self.handlers_ext[msgtype]['hide']:
+                continue
+
+            methods[msgtype] = {'msgtype': msgtype, 'desc': self.handlers_ext[msgtype]['desc']}
+
+            if self.handlers_ext[msgtype]['has_parameters'] is not None:
+                methods[msgtype]['parameters'] = self.handlers_ext[msgtype]['has_parameters'](Node, data)
+
+        peer_conn.senddata("LMER", json.dumps(methods))
 
         self.peerlock.release()
 
