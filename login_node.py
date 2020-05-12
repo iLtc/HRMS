@@ -36,16 +36,16 @@ class LoginNode(Node):
         password = data['password']
 
         if username == 'TEST' and password == 'PASS':
-            peer_conn.senddata('LOGR', json.dumps({'result': 'SUCCESS'}))
+            peer_conn.senddata('LOGR', json.dumps({'content': 'SUCCESS'}))
         else:
-            peer_conn.senddata('LOGR', json.dumps({'result': 'FAILED'}))
+            peer_conn.senddata('LOGR', json.dumps({'content': 'FAILED'}))
 
         self.peerlock.release()
 
     def __handle_logout(self, peer_conn, data):
         self.peerlock.acquire()
 
-        peer_conn.senddata('LOGR', json.dumps({'result': 'SUCCESS'}))
+        peer_conn.senddata('LOGR', json.dumps({'content': 'SUCCESS'}))
 
         self.peerlock.release()
 

@@ -18,47 +18,59 @@ class Client(Node):
 def main():
     client = Client(5, 9998)
 
-    print('\nConnecting to Central Server ({}:{}) ......'.format(client.serverhost, 9999))
+    while True:
+        print('\nConnecting to Central Server ({}:{}) ......'.format(client.serverhost, 9999))
 
-    _, data = client.connectandsend(client.serverhost, 9999, 'LNOD', '')[0]
-    nodes = json.loads(data)
+        _, data = client.connectandsend(client.serverhost, 9999, 'LNOD', '')[0]
+        nodes = json.loads(data)
 
-    print('Success! Find the following {} types of nodes:'.format(len(nodes)))
+        print('Success! Find the following {} types of nodes:'.format(len(nodes)))
 
-    for node_type in nodes:
-        print('{}: {}'.format(node_type, nodes[node_type]['desc']))
+        for node_type in nodes:
+            print('{}: {}'.format(node_type, nodes[node_type]['desc']))
 
-    choices = [x for x in nodes]
+        choices = [x for x in nodes]
+        choices.append('QUIT')
 
-    answer = input("Which type of nodes would you like to use [{}]: ".format('/'.join(choices))).upper()
+        answer = input("Which type of nodes would you like to use [{}]: ".format('/'.join(choices))).upper()
 
-    node = random.choice(nodes[answer]['nodes'])
+        if answer == 'QUIT':
+            break
 
-    print('\nConnecting to {} Node ({}:{}) ......'.format(node['type'], node['ip'], node['port']))
+        node = random.choice(nodes[answer]['nodes'])
 
-    _, data = client.connectandsend(node['ip'], node['port'], 'LMET', '')[0]
+        while True:
+            print('\nConnecting to {} Node ({}:{}) ......'.format(node['type'], node['ip'], node['port']))
 
-    methods = json.loads(data)
+            _, data = client.connectandsend(node['ip'], node['port'], 'LMET', '')[0]
 
-    print('Success! Find the following {} methods:'.format(len(methods)))
+            methods = json.loads(data)
 
-    for msgtype in methods:
-        print('{}: {}'.format(msgtype, methods[msgtype]['desc']))
+            print('Success! Find the following {} methods:'.format(len(methods)))
 
-    choices = [x for x in methods]
+            for msgtype in methods:
+                print('{}: {}'.format(msgtype, methods[msgtype]['desc']))
 
-    answer = input("Which method would you like to use [{}]: ".format('/'.join(choices))).upper()
+            choices = [x for x in methods]
+            choices.append('QUIT')
 
-    inputs = {}
+            answer = input("Which method would you like to use [{}]: ".format('/'.join(choices))).upper()
 
-    if 'parameters' in methods[answer]:
-        print('{} requires {} parameters:'.format(answer, len(methods[answer]['parameters'])))
-        for key, details in methods[answer]['parameters'].items():
-            inputs[key] = input('{}: '.format(details['text']))
+            if answer == 'QUIT':
+                break
 
-    _, data = client.connectandsend(node['ip'], node['port'], answer, json.dumps(inputs))[0]
+            inputs = {}
 
-    pprint(data)
+            if 'parameters' in methods[answer]:
+                print('{} requires {} parameters:'.format(answer, len(methods[answer]['parameters'])))
+                for key, details in methods[answer]['parameters'].items():
+                    inputs[key] = input('{}: '.format(details['text']))
+
+            _, data = client.connectandsend(node['ip'], node['port'], answer, json.dumps(inputs))[0]
+
+            data = json.loads(data)
+
+            print(data['content'])
 
 
 if __name__ == '__main__':
