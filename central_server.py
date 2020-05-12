@@ -1,16 +1,12 @@
-from btpeer import *
+from node import Node
 import json
 
 
-class Node(BTPeer):
+class CentralServer(Node):
     def __init__(self, max_peers, server_port, node_type, central_server_port=9999):
-        BTPeer.__init__(self, max_peers, server_port)
+        Node.__init__(self, max_peers, server_port, node_type, central_server_port)
 
         self.debug = True
-
-        self.node_type = node_type
-
-        self.addrouter(self.__router)
 
         self.addhandler("REGE", self.__handle_register, "Register a new node", False)
         self.addhandler("UNRE", self.__handle_unregister, "Unregister a current node", True)
@@ -21,15 +17,7 @@ class Node(BTPeer):
 
     def __debug(self, msg):
         if self.debug:
-            btdebug(msg)
-
-    def __router(self, peer_id):
-        if peer_id not in self.getpeerids():
-            return None, None, None
-        else:
-            rt = [peer_id]
-            rt.extend(self.peers[peer_id])
-            return rt
+            self.btdebug(msg)
 
     def __handle_register(self, peer_conn, data):
         self.peerlock.acquire()
@@ -71,5 +59,5 @@ class Node(BTPeer):
 
 
 if __name__ == '__main__':
-    node = Node(5, 9999, 'CENTRAL_SERVER')
-    node.mainloop()
+    cs = CentralServer(5, 9999, 'CENTRAL_SERVER')
+    cs.mainloop()

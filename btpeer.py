@@ -53,6 +53,10 @@ class BTPeer:
         self.handlers_ext = {}
         self.router = None
 
+    def btdebug(self, msg):
+        """ Prints a message to the screen with the name of the current thread """
+        print("[%s] %s" % (str(threading.currentThread().getName()), msg))
+
     # --------------------------------------------------------------------------
     def __initserverhost(self):
         # --------------------------------------------------------------------------

@@ -14,6 +14,8 @@ class Node(BTPeer):
 
         self.addrouter(self.__router)
 
+        self.addhandler('LMET', self.__handle_list_methods, 'List all methods for the current node', False)
+
         if self.node_type != 'CENTRAL_SERVER':
             return_type, data = self.connectandsend(
                 self.serverhost,
@@ -44,8 +46,19 @@ class Node(BTPeer):
             rt.extend(self.peers[peer_id])
             return rt
 
+    def __handle_list_methods(self, peer_conn, data):
+        self.peerlock.acquire()
+
+        peer_conn.senddata(
+            "LMER",
+            json.dumps([{'msgtype': msgtype,
+                         'desc': self.handlers_ext[msgtype]['desc'],
+                         'has_parameters': self.handlers_ext[msgtype]['has_parameters']} for msgtype in self.handlers]))
+
+        self.peerlock.release()
+
 
 if __name__ == '__main__':
     node = Node(5, 9123, 'TEST')
-    node.connectandsend('127.0.0.1', 9999, 'LNOD', '', waitreply=True)
-    node.mainloop()
+    # node.connectandsend('127.0.0.1', 9999, 'LNOD', '', waitreply=True)
+
