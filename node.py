@@ -68,12 +68,17 @@ class Node(BTPeer):
             if parameters is not None:
                 methods[msgtype]['parameters'] = parameters
 
-        peer_conn.senddata("LMER", json.dumps(methods))
+        msg = self.handle_list_methods_msg(data, methods)
+
+        peer_conn.senddata("LMER", json.dumps({'msg': msg, 'methods': methods}))
 
         self.peerlock.release()
 
     def handle_list_method(self, method_name, data):
         return True, 'Not Implemented', None
+
+    def handle_list_methods_msg(self, data, methods):
+        return 'Find the following {} methods that you can use:'.format(len(methods))
 
 
 if __name__ == '__main__':

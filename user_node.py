@@ -24,6 +24,17 @@ class UserNode(Node):
         if self.debug:
             self.btdebug(msg)
 
+    def handle_list_methods_msg(self, data, methods):
+        if data != '':
+            data = json.loads(data)
+        else:
+            data = {'states': {}}
+
+        if 'user_token' not in data['states']:
+            return 'You have not logged in yet! Please go to a LOGIN node to login first!'
+        else:
+            return super().handle_list_methods_msg(data, methods)
+
     def handle_list_method(self, method_name, data):
         if method_name == 'LMET':
             return True, '', None

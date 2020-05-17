@@ -62,14 +62,14 @@
 
     function list_nodes() {
         connect_and_send('127.0.0.1', 9999, 'LNOD', {}, function (data) {
-            nodes = data;
+            nodes = data['nodes'];
 
             var html = '<div class="card" id="card-'+ count +'">\n' +
                 '        <div class="card-header">\n' +
                 '            Central Server\n' +
                 '        </div>\n' +
                 '        <div class="card-body">\n' +
-                '            <p class="card-text">Find the following ' + Object.keys(nodes).length + ' types of nodes:</p>\n';
+                '            <p class="card-text">' + data['msg'] + '</p>\n';
 
             for (var type in nodes) {
                 html += '            <p><button type="button" class="btn btn-primary node-choose-button" data-node="' + type + '">' + type + '</button> ' + nodes[type]["desc"] + '</p>\n'
@@ -96,14 +96,14 @@
         node = nodes[type]['nodes'][Math.floor(Math.random() * nodes[type]['nodes'].length)];
 
         connect_and_send(node['ip'], node['port'], 'LMET', {}, function (data) {
-            methods = data;
+            methods = data['methods'];
 
             var html = '<div class="card" id="card-'+ count +'">\n' +
                 '        <div class="card-header">\n' +
                 '            ' + type + ' Node\n' +
                 '        </div>\n' +
                 '        <div class="card-body">\n' +
-                '            <p class="card-text">Find the following ' + Object.keys(methods).length + ' methods:</p>\n';
+                '            <p class="card-text">' + data['msg'] + '</p>\n';
 
             for (var method in methods) {
                 html += '            <p><button type="button" class="btn btn-primary method-choose-button" data-node="' + type + '" data-method="' + method + '">' + method + '</button> ' + methods[method]["desc"] + '</p>\n'

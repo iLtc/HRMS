@@ -8,9 +8,9 @@ class CentralServer(Node):
 
         self.debug = True
 
-        self.addhandler("REGE", self.__handle_register, "Register a new node")
-        self.addhandler("UNRE", self.__handle_unregister, "Unregister a current node")
-        self.addhandler("LNOD", self.__handle_list_node, "List all available nodes")
+        self.addhandler("REGE", self.__handle_register)
+        self.addhandler("UNRE", self.__handle_unregister)
+        self.addhandler("LNOD", self.__handle_list_node)
 
         self.node_index = 0
         self.available_nodes = {}
@@ -45,7 +45,8 @@ class CentralServer(Node):
 
         data = json.loads(data)
 
-        del self.available_nodes[data['id']]
+        if data['id'] in self.available_nodes:
+            del self.available_nodes[data['id']]
 
         self.__debug("Node {} has been unregistered.".format(data['id']))
 
@@ -56,20 +57,28 @@ class CentralServer(Node):
 
         nodes = {}
 
-        for id_, data in self.available_nodes.items():
-            if data['hide']:
+        for id_, node in self.available_nodes.items():
+            if node['hide']:
                 continue
 
-            if data['type'] not in nodes:
-                nodes[data['type']] = {'desc': data['desc'], 'nodes': []}
+            if node['type'] not in nodes:
+                nodes[node['type']] = {'desc': node['desc'], 'nodes': []}
 
-            nodes[data['type']]['nodes'].append({'id': id_,
-                                                 'ip': data['ip'],
-                                                 'port': data['port'],
-                                                 'type': data['type'],
-                                                 'desc': data['desc']})
+            nodes[node['type']]['nodes'].append({'id': id_,
+                                                 'ip': node['ip'],
+                                                 'port': node['port'],
+                                                 'type': node['type'],
+                                                 'desc': node['desc']})
 
-        peer_conn.senddata("LNOR", json.dumps(nodes))
+        data = json.loads(data)
+
+        if 'name' in data['states']:
+            msg = "Hello, {}! Welcome to HRMS! <br> We found the following {} types of node you can use:".format(data['states']['name'], len(nodes))
+
+        else:
+            msg = "Hello! Welcome to HRMS! Please go to a LOGIN node to login first. <br> We found the following {} types of node you can use:".format(len(nodes))
+
+        peer_conn.senddata("LNOR", json.dumps({'msg': msg, 'nodes': nodes}))
 
         self.peerlock.release()
 
