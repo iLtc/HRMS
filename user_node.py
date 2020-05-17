@@ -14,23 +14,45 @@ class UserNode(Node):
             {'id': '3', 'name': 'Person C', 'username': 'PC', 'role': 'Employee'}
         ]
 
-        self.addhandler('LIST', self.__handle_list, 'List all users in the database')
+        self.addhandler('LIST', self.__handle_list)
 
-        self.addhandler(
-            'DETA',
-            self.__handle_details,
-            'Show the details of a specific user',
-            has_parameters=self.__handle_details_parameters)
+        self.addhandler('DETA', self.__handle_details)
 
-        self.addhandler(
-            'ADDU',
-            self.__handle_add,
-            'Add a user',
-            has_parameters=self.__handle_add_parameters)
+        self.addhandler('ADDU', self.__handle_add)
 
     def __debug(self, msg):
         if self.debug:
             self.btdebug(msg)
+
+    def handle_list_method(self, method_name, data):
+        if method_name == 'LMET':
+            return True, '', None
+
+        if data != '':
+            data = json.loads(data)
+        else:
+            data = {'states': {}}
+
+        if 'user_token' not in data['states']:
+            return True, '', None
+
+        if method_name == 'LIST':
+            return False, 'List all users in the database', None
+
+        if method_name == 'DETA':
+            return False, 'Show the details of a specific user', {
+                'id': {'text': 'User ID', 'required': True}
+            }
+
+        if method_name == 'ADDU':
+            return False, 'Add a user', {
+                'id': {'text': 'User ID', 'required': True},
+                'name': {'text': 'Name', 'required': True},
+                'username': {'text': 'Username', 'required': True},
+                'role': {'text': 'User Role', 'required': True}
+            }
+
+        return True, '', None
 
     def __handle_list(self, peer_conn, data):
         self.peerlock.acquire()
@@ -42,11 +64,6 @@ class UserNode(Node):
         peer_conn.senddata('LISR', json.dumps(data))
 
         self.peerlock.release()
-
-    def __handle_details_parameters(self, peer_conn, data):
-        return {
-            'id': {'text': 'User ID', 'required': True}
-        }
 
     def __handle_details(self, peer_conn, data):
         self.peerlock.acquire()
@@ -60,14 +77,6 @@ class UserNode(Node):
         peer_conn.senddata('DETR', json.dumps(data))
 
         self.peerlock.release()
-
-    def __handle_add_parameters(self, peer_conn, data):
-        return {
-            'id': {'text': 'User ID', 'required': True},
-            'name': {'text': 'Name', 'required': True},
-            'username': {'text': 'Username', 'required': True},
-            'role': {'text': 'User Role', 'required': True}
-        }
 
     def __handle_add(self, peer_conn, data):
         self.peerlock.acquire()

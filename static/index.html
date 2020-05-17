@@ -45,7 +45,7 @@
             '/msg',
             {
                 'type': 'POST',
-                'data': {'host': host, 'port': port, 'type': type, 'data': data},
+                'data': {'host': host, 'port': port, 'type': type, 'data': JSON.stringify(data)},
                 'dataType': 'json',
                 'success': function(data, status, xhr) {
                     complete(data)
@@ -61,7 +61,7 @@
     }
 
     function list_nodes() {
-        connect_and_send('127.0.0.1', 9999, 'LNOD', '', function (data) {
+        connect_and_send('127.0.0.1', 9999, 'LNOD', {}, function (data) {
             nodes = data;
 
             var html = '<div class="card" id="card-'+ count +'">\n' +
@@ -95,7 +95,7 @@
     function list_methods(type) {
         node = nodes[type]['nodes'][Math.floor(Math.random() * nodes[type]['nodes'].length)];
 
-        connect_and_send(node['ip'], node['port'], 'LMET', '', function (data) {
+        connect_and_send(node['ip'], node['port'], 'LMET', {}, function (data) {
             methods = data;
 
             var html = '<div class="card" id="card-'+ count +'">\n' +
@@ -136,7 +136,7 @@
         node = nodes[type]['nodes'][Math.floor(Math.random() * nodes[type]['nodes'].length)];
 
         if (!('parameters' in methods[name])) {
-            connect_and_send(node['ip'], node['port'], name, '', function (data) {
+            connect_and_send(node['ip'], node['port'], name, {}, function (data) {
                 var html = '<div class="card" id="card-'+ count +'">\n' +
                     '        <div class="card-header">\n' +
                     '            ' + name + ' Method\n' +
@@ -222,7 +222,7 @@
 
         node = nodes[type]['nodes'][Math.floor(Math.random() * nodes[type]['nodes'].length)];
 
-        connect_and_send(node['ip'], node['port'], name, JSON.stringify(data), function (data) {
+        connect_and_send(node['ip'], node['port'], name, data, function (data) {
             var html = '<div class="card" id="card-'+ count +'">\n' +
                 '        <div class="card-header">\n' +
                 '            ' + name + ' Method\n' +

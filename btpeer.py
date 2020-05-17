@@ -50,7 +50,6 @@ class BTPeer:
         self.shutdown = False  # used to stop the main loop
 
         self.handlers = {}
-        self.handlers_ext = {}
         self.router = None
 
     def btdebug(self, msg):
@@ -135,12 +134,11 @@ class BTPeer:
         t.start()
 
     # --------------------------------------------------------------------------
-    def addhandler(self, msgtype, handler, desc, has_parameters=None, hide_handler=False):
+    def addhandler(self, msgtype, handler):
         # --------------------------------------------------------------------------
         """ Registers the handler for the given message type with this peer """
         assert len(msgtype) == 4
         self.handlers[msgtype] = handler
-        self.handlers_ext[msgtype] = {'desc': desc, 'has_parameters': has_parameters, 'hide': hide_handler}
 
     # --------------------------------------------------------------------------
     def addrouter(self, router):

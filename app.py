@@ -15,7 +15,6 @@ def main():
 
 @app.route('/msg', methods=['post'])
 def message():
-    print(request.form)
     _, data = client.connectandsend(request.form['host'], request.form['port'], request.form['type'], request.form['data'])[0]
 
     return data

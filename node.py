@@ -14,12 +14,7 @@ class Node(BTPeer):
 
         self.addrouter(self.__router)
 
-        self.addhandler(
-            'LMET',
-            self.__handle_list_methods,
-            'List all methods for the current node',
-            hide_handler=True
-        )
+        self.addhandler('LMET', self.__handle_list_methods)
 
         if self.node_type != 'CENTRAL_SERVER':
             return_type, data = self.connectandsend(
@@ -63,17 +58,22 @@ class Node(BTPeer):
         methods = {}
 
         for msgtype in self.handlers:
-            if self.handlers_ext[msgtype]['hide']:
+            skip, desc, parameters = self.handle_list_method(msgtype, data)
+
+            if skip:
                 continue
 
-            methods[msgtype] = {'msgtype': msgtype, 'desc': self.handlers_ext[msgtype]['desc']}
+            methods[msgtype] = {'msgtype': msgtype, 'desc': desc}
 
-            if self.handlers_ext[msgtype]['has_parameters'] is not None:
-                methods[msgtype]['parameters'] = self.handlers_ext[msgtype]['has_parameters'](Node, data)
+            if parameters is not None:
+                methods[msgtype]['parameters'] = parameters
 
         peer_conn.senddata("LMER", json.dumps(methods))
 
         self.peerlock.release()
+
+    def handle_list_method(self, method_name, data):
+        return True, 'Not Implemented', None
 
 
 if __name__ == '__main__':

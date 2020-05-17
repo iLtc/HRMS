@@ -6,6 +6,8 @@ from pprint import pprint
 
 class Client(Node):
     def __init__(self, max_peers, server_port):
+        self.states = {}
+
         Node.__init__(self, max_peers, server_port, 'CLIENT', hide_node=True)
 
         self.debug = False
@@ -13,6 +15,35 @@ class Client(Node):
     def __debug(self, msg):
         if self.debug:
             self.btdebug(msg)
+
+    def connectandsend(self, host, port, msgtype, msgdata,
+                       pid=None, waitreply=True):
+
+        data = json.loads(msgdata)
+        data['states'] = self.states
+
+        results = super().connectandsend(host, port, msgtype, json.dumps(data),
+                                         pid=None, waitreply=True)
+
+        if len(results) == 0:
+            return None
+
+        _, data = results[0]
+
+        data = json.loads(data)
+
+        if 'states' in data:
+            for key, value in data['states'].items():
+                if value is None:
+                    if key in self.states:
+                        del self.states[key]
+
+                else:
+                    self.states[key] = value
+
+            del data['states']
+
+        return results
 
 
 def main():
