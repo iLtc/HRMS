@@ -70,7 +70,7 @@ class LoginNode(Node):
 
             peer_conn.senddata('LOGR', json.dumps(
                 {'content': {'type': 'text', 'texts': ['Login Success!', 'Welcome back, {}!'.format(name)]},
-                 'states': {'name': name, 'user_token': username, 'role': role}}))
+                 'states': {'name': name, 'user_token': username, 'role': role, 'user_id': id_}}))
 
         self.peerlock.release()
 

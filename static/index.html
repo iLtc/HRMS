@@ -159,6 +159,10 @@
                     html += '      <input type="password" class="form-control" name="' + key + '" id="' + key + '" value="">\n';
                 }
 
+                if (methods[name]['parameters'][key]['type'] === 'textarea') {
+                    html += '      <textarea class="form-control" name="' + key + '" id="' + key + '" rows="3"></textarea>\n';
+                }
+
                 if (methods[name]['parameters'][key]['type'] === 'select') {
                     html += '<select class="form-control" name="' + key + '" id="' + key + '">';
 

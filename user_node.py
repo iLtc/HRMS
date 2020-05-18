@@ -45,16 +45,22 @@ class UserNode(Node):
         if method_name == 'LIST':
             return False, 'List all users in the database', None
 
-        c = sqlite3.connect('database.db').cursor()
-
         if method_name == 'DETA':
-            options = [{'text': user[1], 'value': user[0]} for user in c.execute('SELECT id, name FROM users')]
+            if data['states']['role'] == 'Employee':
+                options = [{'text': data['states']['name'], 'value': data['states']['user_id']}]
+            else:
+                c = sqlite3.connect('database.db').cursor()
+
+                options = [{'text': user[1], 'value': user[0]} for user in c.execute('SELECT id, name FROM users')]
 
             return False, 'Show the details of a specific user', {
                 'id': {'text': 'User', 'required': True, 'type': 'select', 'options': options}
             }
 
         if method_name == 'ADDU':
+            if data['states']['role'] != 'Manager':
+                return True, '', None
+
             options = [
                 {'text': 'Employee', 'value': 'Employee'},
                 {'text': 'Supervisor', 'value': 'Supervisor'},
@@ -62,7 +68,6 @@ class UserNode(Node):
             ]
 
             return False, 'Add a user', {
-                'id': {'text': 'User ID', 'required': True, 'type': 'text'},
                 'name': {'text': 'Name', 'required': True, 'type': 'text'},
                 'username': {'text': 'Username', 'required': True, 'type': 'text'},
                 'password': {'text': 'Password', 'required': True, 'type': 'password'},
@@ -123,13 +128,13 @@ class UserNode(Node):
             del data['states']
 
         if data['password'] != data['cpassword']:
-            response = {'content':{'type': 'text', 'texts': ['Error!', 'The two password fields don\'t match.']}}
+            response = {'content': {'type': 'text', 'texts': ['Error!', 'The two password fields don\'t match.']}}
         else:
             conn = sqlite3.connect('database.db')
 
             c = conn.cursor()
 
-            c.execute('INSERT INTO users VALUES (?, ?, ?, ?, ?)', (data['id'], data['name'], data['username'], data['password'], data['role']))
+            c.execute('INSERT INTO users (name, username, password, role) VALUES (?, ?, ?, ?)', (data['name'], data['username'], data['password'], data['role']))
 
             conn.commit()
 
