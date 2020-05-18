@@ -52,7 +52,7 @@ class UserNode(Node):
             else:
                 c = sqlite3.connect('database.db').cursor()
 
-                options = [{'text': user[1], 'value': user[0]} for user in c.execute('SELECT id, name FROM users')]
+                options = [{'text': '{} (ID: {})'.format(user[1], user[0]), 'value': user[0]} for user in c.execute('SELECT id, name FROM users')]
 
                 return False, 'Show the details of a specific user', {
                     'id': {'text': 'User', 'required': True, 'type': 'select', 'options': options}

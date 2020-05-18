@@ -45,6 +45,7 @@
             '/msg',
             {
                 'type': 'POST',
+                'cache': false,
                 'data': {'host': host, 'port': port, 'type': type, 'data': JSON.stringify(data)},
                 'dataType': 'json',
                 'success': function(data, status, xhr) {
