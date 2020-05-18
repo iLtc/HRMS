@@ -1,5 +1,6 @@
 from node import Node
 import json
+import sqlite3
 
 
 class UserNode(Node):
@@ -7,12 +8,6 @@ class UserNode(Node):
         Node.__init__(self, max_peers, server_port, 'USER', node_desc='Handle User Management')
 
         self.debug = True
-
-        self.users = [
-            {'id': '1', 'name': 'Person A', 'username': 'PA', 'role': 'Employee'},
-            {'id': '2', 'name': 'Person B', 'username': 'PB', 'role': 'Employee'},
-            {'id': '3', 'name': 'Person C', 'username': 'PC', 'role': 'Employee'}
-        ]
 
         self.addhandler('LIST', self.__handle_list)
 
@@ -50,8 +45,10 @@ class UserNode(Node):
         if method_name == 'LIST':
             return False, 'List all users in the database', None
 
+        c = sqlite3.connect('database.db').cursor()
+
         if method_name == 'DETA':
-            options = [{'text': user['name'], 'value': user['id']} for user in self.users]
+            options = [{'text': user[1], 'value': user[0]} for user in c.execute('SELECT id, name FROM users')]
 
             return False, 'Show the details of a specific user', {
                 'id': {'text': 'User', 'required': True, 'type': 'select', 'options': options}
@@ -68,6 +65,8 @@ class UserNode(Node):
                 'id': {'text': 'User ID', 'required': True, 'type': 'text'},
                 'name': {'text': 'Name', 'required': True, 'type': 'text'},
                 'username': {'text': 'Username', 'required': True, 'type': 'text'},
+                'password': {'text': 'Password', 'required': True, 'type': 'password'},
+                'cpassword': {'text': 'Repeat Password', 'required': True, 'type': 'password'},
                 'role': {'text': 'User Role', 'required': True, 'type': 'select', 'options': options}
             }
 
@@ -76,9 +75,11 @@ class UserNode(Node):
     def __handle_list(self, peer_conn, data):
         self.peerlock.acquire()
 
-        headers = ['User ID', 'User Name']
+        headers = ['User ID', 'User Name', 'User Role']
 
-        rows = [[user['id'], user['name']] for user in self.users]
+        c = sqlite3.connect('database.db').cursor()
+
+        rows = [[user[0], user[1], user[2]] for user in c.execute('SELECT id, name, role FROM users')]
 
         data = {'content': {'type': 'table', 'headers': headers, 'rows': rows}}
 
@@ -91,11 +92,25 @@ class UserNode(Node):
 
         data = json.loads(data)
 
-        results = [['{}: {}'.format(key, value) for key, value in user.items()] for user in self.users if user['id'] == data['id']]
+        c = sqlite3.connect('database.db').cursor()
 
-        data = {'content': {'type': 'text', 'texts': results[0]}}
+        c.execute('SELECT * FROM users WHERE id = ?', (data['id'],))
 
-        peer_conn.senddata('DETR', json.dumps(data))
+        result = c.fetchone()
+
+        if result is None:
+            peer_conn.senddata('DETR', json.dumps(
+                {'content': {'type': 'text',
+                             'texts': ['Error!', 'Cannot find the user with id = {}.'.format(data['id'])]}}))
+
+        else:
+            id_, name, username, password, role = result
+
+            texts = ['User ID: ' + id_, 'User Name: ' + name, 'Username: ' + username, 'User Role: ' + role]
+
+            data = {'content': {'type': 'text', 'texts': texts}}
+
+            peer_conn.senddata('DETR', json.dumps(data))
 
         self.peerlock.release()
 
@@ -107,11 +122,20 @@ class UserNode(Node):
         if 'states' in data:
             del data['states']
 
-        self.users.append(data)
+        if data['password'] != data['cpassword']:
+            response = {'content':{'type': 'text', 'texts': ['Error!', 'The two password fields don\'t match.']}}
+        else:
+            conn = sqlite3.connect('database.db')
 
-        data = {'content': {'type': 'text', 'texts': ['User Add Success!', 'The new user has been added to the database.']}}
+            c = conn.cursor()
 
-        peer_conn.senddata('DETR', json.dumps(data))
+            c.execute('INSERT INTO users VALUES (?, ?, ?, ?, ?)', (data['id'], data['name'], data['username'], data['password'], data['role']))
+
+            conn.commit()
+
+            response = {'content': {'type': 'text', 'texts': ['User Add Success!', 'The new user has been added to the database.']}}
+
+        peer_conn.senddata('DETR', json.dumps(response))
 
         self.peerlock.release()
 
@@ -120,4 +144,3 @@ if __name__ == '__main__':
     un = UserNode(5, 9002)
 
     un.mainloop()
-

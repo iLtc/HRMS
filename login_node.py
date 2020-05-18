@@ -1,5 +1,6 @@
 from node import Node
 import json
+import sqlite3
 
 
 class LoginNode(Node):
@@ -52,13 +53,24 @@ class LoginNode(Node):
         username = data['username']
         password = data['password']
 
-        if username == 'TEST' and password == 'PASS':
-            peer_conn.senddata('LOGR', json.dumps(
-                {'content': {'type': 'text', 'texts': ['Login Success!', 'Welcome back, {}!'.format(username)]},
-                 'states': {'name': username, 'user_token': username, 'role': 'User'}}))
-        else:
+        c = sqlite3.connect('database.db').cursor()
+
+        t = (username, password)
+
+        c.execute('SELECT * FROM users WHERE username=? AND password=?', t)
+
+        result = c.fetchone()
+
+        if result is None:
             peer_conn.senddata('LOGR', json.dumps(
                 {'content': {'type': 'text', 'texts': ['Login Failed!', 'The username or password you entered does not match an account in our records!']}}))
+
+        else:
+            id_, name, username, password, role = result
+
+            peer_conn.senddata('LOGR', json.dumps(
+                {'content': {'type': 'text', 'texts': ['Login Success!', 'Welcome back, {}!'.format(name)]},
+                 'states': {'name': name, 'user_token': username, 'role': role}}))
 
         self.peerlock.release()
 
