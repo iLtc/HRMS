@@ -152,7 +152,13 @@
                     '    <div class="col-sm-10">\n';
 
                 if (methods[name]['parameters'][key]['type'] === 'text') {
-                    html += '      <input type="text" class="form-control" name="' + key + '" id="' + key + '" value="">\n';
+                    var value = '';
+
+                    if ('value' in methods[name]['parameters'][key]) {
+                        value = methods[name]['parameters'][key]['value']
+                    }
+
+                    html += '      <input type="text" class="form-control" name="' + key + '" id="' + key + '" value="' + value + '">\n';
                 }
 
                 if (methods[name]['parameters'][key]['type'] === 'password') {
