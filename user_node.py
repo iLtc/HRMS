@@ -48,15 +48,15 @@ class UserNode(Node):
 
         if method_name == 'DETA':
             if data['states']['role'] == 'Employee':
-                options = [{'text': data['states']['name'], 'value': data['states']['user_id']}]
+                return False, 'Show the details of the current user', None
             else:
                 c = sqlite3.connect('database.db').cursor()
 
                 options = [{'text': user[1], 'value': user[0]} for user in c.execute('SELECT id, name FROM users')]
 
-            return False, 'Show the details of a specific user', {
-                'id': {'text': 'User', 'required': True, 'type': 'select', 'options': options}
-            }
+                return False, 'Show the details of a specific user', {
+                    'id': {'text': 'User', 'required': True, 'type': 'select', 'options': options}
+                }
 
         if method_name == 'ADDU':
             if data['states']['role'] != 'Manager':
@@ -98,9 +98,11 @@ class UserNode(Node):
 
         data = json.loads(data)
 
+        id_ = data['id'] if 'id' in data else data['states']['user_id']
+
         c = sqlite3.connect('database.db').cursor()
 
-        c.execute('SELECT * FROM users WHERE id = ?', (data['id'],))
+        c.execute('SELECT * FROM users WHERE id = ?', (id_,))
 
         result = c.fetchone()
 

@@ -65,9 +65,9 @@ class AttendanceNode(Node):
                 if row[0] == 'Clock Out':
                     return True, '', None
                 if row[0] == 'Clock In':
-                    break
+                    return False, 'Allow user to clock out', None
 
-            return False, 'Allow user to clock out', None
+            return True, '', None
 
         if method_name == 'RQLV':
             return False, 'Allow user to request for leave', {
@@ -76,7 +76,7 @@ class AttendanceNode(Node):
 
         if method_name == 'REPT':
             if data['states']['role'] == 'Employee':
-                options = [{'text': data['states']['name'], 'value': data['states']['user_id']}]
+                return False, 'Show the details of a specific user', None
             else:
                 c = sqlite3.connect('database.db').cursor()
 
@@ -85,9 +85,9 @@ class AttendanceNode(Node):
                 for user in c.execute('SELECT id, name FROM users'):
                     options.append({'text': user[1], 'value': user[0]})
 
-            return False, 'Show the details of a specific user', {
-                'id': {'text': 'User', 'required': True, 'type': 'select', 'options': options}
-            }
+                return False, 'Show the details of a specific user', {
+                    'id': {'text': 'User', 'required': True, 'type': 'select', 'options': options}
+                }
 
         return True, '', None
 
@@ -174,7 +174,7 @@ class AttendanceNode(Node):
 
         data = json.loads(data)
 
-        id_ = data['id']
+        id_ = data['states']['user_id'] if 'id' not in data else data['id']
 
         headers = ['ID', 'User Name', 'User Role', 'Type', 'Time', 'Reason']
 
