@@ -2,6 +2,7 @@ from node import Node
 import json
 from datetime import datetime
 import sqlite3
+import sys
 
 
 class DateEncoder(json.JSONEncoder):
@@ -47,9 +48,25 @@ class AttendanceNode(Node):
             return True, '', None
 
         if method_name == 'CLKI':
+            c = sqlite3.connect('database.db').cursor()
+
+            for row in c.execute('SELECT type FROM attendances WHERE user_id = ? ORDER BY id DESC', (data['states']['user_id'], )):
+                if row[0] == 'Clock In':
+                    return True, '', None
+                if row[0] == 'Clock Out':
+                    break
+
             return False, 'Allow user to clock in', None
 
         if method_name == 'CLKO':
+            c = sqlite3.connect('database.db').cursor()
+
+            for row in c.execute('SELECT type FROM attendances WHERE user_id = ? ORDER BY id DESC', (data['states']['user_id'], )):
+                if row[0] == 'Clock Out':
+                    return True, '', None
+                if row[0] == 'Clock In':
+                    break
+
             return False, 'Allow user to clock out', None
 
         if method_name == 'RQLV':
@@ -181,7 +198,9 @@ class AttendanceNode(Node):
 
 
 if __name__ == '__main__':
-    an = AttendanceNode(5, 9003)
+    port = int(sys.argv[1]) if len(sys.argv) > 1 else 9020
+
+    an = AttendanceNode(5, port)
 
     an.mainloop()
 

@@ -1,6 +1,7 @@
 from node import Node
 import json
 import sqlite3
+import sys
 
 
 class LoginNode(Node):
@@ -85,7 +86,9 @@ class LoginNode(Node):
 
 
 if __name__ == '__main__':
-    ln = LoginNode(5, 9001)
+    port = int(sys.argv[1]) if len(sys.argv) > 1 else 9001
+
+    ln = LoginNode(5, port)
 
     ln.mainloop()
 

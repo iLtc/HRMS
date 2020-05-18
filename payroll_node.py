@@ -1,6 +1,7 @@
 from node import Node
 import json
 import sqlite3
+import sys
 
 
 class PayrollNode(Node):
@@ -105,6 +106,8 @@ class PayrollNode(Node):
 
 
 if __name__ == '__main__':
-    pn = PayrollNode(5, 9011)
+    port = int(sys.argv[1]) if len(sys.argv) > 1 else 9030
+
+    pn = PayrollNode(5, port)
 
     pn.mainloop()

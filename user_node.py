@@ -1,6 +1,7 @@
 from node import Node
 import json
 import sqlite3
+import sys
 
 
 class UserNode(Node):
@@ -111,7 +112,7 @@ class UserNode(Node):
         else:
             id_, name, username, password, role = result
 
-            texts = ['User ID: ' + id_, 'User Name: ' + name, 'Username: ' + username, 'User Role: ' + role]
+            texts = ['User ID: ' + str(id_), 'User Name: ' + name, 'Username: ' + username, 'User Role: ' + role]
 
             data = {'content': {'type': 'text', 'texts': texts}}
 
@@ -146,6 +147,8 @@ class UserNode(Node):
 
 
 if __name__ == '__main__':
-    un = UserNode(5, 9010)
+    port = int(sys.argv[1]) if len(sys.argv) > 1 else 9010
+
+    un = UserNode(5, port)
 
     un.mainloop()
