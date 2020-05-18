@@ -68,9 +68,11 @@ class UserNode(Node):
     def __handle_list(self, peer_conn, data):
         self.peerlock.acquire()
 
-        results = ['{}\t{}'.format(str(user['id']), user['name']) for user in self.users]
+        headers = ['User ID', 'User Name']
 
-        data = {'content': '\n'.join(results)}
+        rows = [[user['id'], user['name']] for user in self.users]
+
+        data = {'content': {'type': 'table', 'headers': headers, 'rows': rows}}
 
         peer_conn.senddata('LISR', json.dumps(data))
 
@@ -83,7 +85,7 @@ class UserNode(Node):
 
         results = [['{}: {}'.format(key, value) for key, value in user.items()] for user in self.users if user['id'] == data['id']]
 
-        data = {'content': '\n'.join(results[0])}
+        data = {'content': {'type': 'text', 'texts': results[0]}}
 
         peer_conn.senddata('DETR', json.dumps(data))
 
@@ -96,7 +98,7 @@ class UserNode(Node):
 
         self.users.append(data)
 
-        data = {'content': 'SUCCESS'}
+        data = {'content': {'type': 'text', 'texts': ['User Add Success!', 'The new user has been added to the database.']}}
 
         peer_conn.senddata('DETR', json.dumps(data))
 

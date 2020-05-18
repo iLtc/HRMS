@@ -133,32 +133,9 @@
             return;
         }
 
-        node = nodes[type]['nodes'][Math.floor(Math.random() * nodes[type]['nodes'].length)];
-
         if (!('parameters' in methods[name])) {
-            connect_and_send(node['ip'], node['port'], name, {}, function (data) {
-                var html = '<div class="card" id="card-'+ count +'">\n' +
-                    '        <div class="card-header">\n' +
-                    '            ' + name + ' Method\n' +
-                    '        </div>\n' +
-                    '        <div class="card-body">\n' +
-                    '            <p class="card-text">' + data['content'] + '</p>\n' +
-                    '            <p><button type="button" class="btn btn-primary return-button" data-node="' + type + '"> Return </button></p>' +
-                    '        </div>\n' +
-                    '    </div>';
+            handle_method_request(type, name, {})
 
-                hide_previous();
-
-                $('.container').append(html);
-
-                $('.return-button').click(function () {
-                    list_methods($(this).data('node'));
-                });
-
-                count += 1;
-
-                // list_methods(type);
-            });
         } else {
             var html = '<div class="card" id="card-'+ count +'">\n' +
                 '        <div class="card-header">\n' +
@@ -220,6 +197,10 @@
 
         let name = data['method'];
 
+        handle_method_request(type, name, data);
+    }
+
+    function handle_method_request(type, name, data) {
         node = nodes[type]['nodes'][Math.floor(Math.random() * nodes[type]['nodes'].length)];
 
         connect_and_send(node['ip'], node['port'], name, data, function (data) {
@@ -227,9 +208,42 @@
                 '        <div class="card-header">\n' +
                 '            ' + name + ' Method\n' +
                 '        </div>\n' +
-                '        <div class="card-body">\n' +
-                '            <p class="card-text">' + data['content'] + '</p>\n' +
-                '            <p><button type="button" class="btn btn-primary return-button" data-node="' + type + '"> Return </button></p>' +
+                '        <div class="card-body">\n';
+
+            if (data['content']['type'] === 'text') {
+                for (var i in data['content']['texts']) {
+                    html += '            <p class="card-text">' + data['content']['texts'][i] + '</p>\n'
+                }
+            }
+
+            if (data['content']['type'] === 'table') {
+                html += '<table class="table">\n' +
+                    '  <thead>\n' +
+                    '    <tr>';
+
+                for (var i in data['content']['headers']) {
+                    html += '<th scope="col">' + data['content']['headers'][i] + '</th>';
+                }
+
+                html += '</tr>\n' +
+                    '  </thead>\n' +
+                    '  <tbody>';
+
+                for (var i in data['content']['rows']) {
+                    html += '<tr>';
+
+                    for (var j in data['content']['rows'][i]) {
+                        html += '<td>' + data['content']['rows'][i][j] + '</td>';
+                    }
+
+                    html += '</tr>';
+                }
+
+                html += '  </tbody>\n' +
+                    '</table>';
+            }
+
+            html += '            <p><button type="button" class="btn btn-primary return-button" data-node="' + type + '"> Return </button></p>' +
                 '        </div>\n' +
                 '    </div>';
 

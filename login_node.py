@@ -53,16 +53,21 @@ class LoginNode(Node):
         password = data['password']
 
         if username == 'TEST' and password == 'PASS':
-            peer_conn.senddata('LOGR', json.dumps({'content': 'SUCCESS', 'states': {'name': username, 'user_token': username, 'role': 'User'}}))
+            peer_conn.senddata('LOGR', json.dumps(
+                {'content': {'type': 'text', 'texts': ['Login Success!', 'Welcome back, {}!'.format(username)]},
+                 'states': {'name': username, 'user_token': username, 'role': 'User'}}))
         else:
-            peer_conn.senddata('LOGR', json.dumps({'content': 'FAILED'}))
+            peer_conn.senddata('LOGR', json.dumps(
+                {'content': {'type': 'text', 'texts': ['Login Failed!', 'The username or password you entered does not match an account in our records!']}}))
 
         self.peerlock.release()
 
     def __handle_logout(self, peer_conn, data):
         self.peerlock.acquire()
 
-        peer_conn.senddata('LOGR', json.dumps({'content': 'SUCCESS', 'states': {'name': None, 'user_token': None, 'role': None}}))
+        peer_conn.senddata('LOGR', json.dumps(
+            {'content': {'type': 'text', 'texts': ['Logout Success!', 'You have been logged out.']},
+             'states': {'name': None, 'user_token': None, 'role': None}}))
 
         self.peerlock.release()
 
