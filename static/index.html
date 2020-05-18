@@ -149,9 +149,27 @@
             for (var key in methods[name]['parameters']) {
                 html += '<div class="form-group row">\n' +
                     '    <label for="' + key + '" class="col-sm-2 col-form-label">' + methods[name]['parameters'][key]['text'] + '</label>\n' +
-                    '    <div class="col-sm-10">\n' +
-                    '      <input type="text" class="form-control" name="' + key + '" id="' + key + '" value="">\n' +
-                    '    </div>\n' +
+                    '    <div class="col-sm-10">\n';
+
+                if (methods[name]['parameters'][key]['type'] === 'text') {
+                    html += '      <input type="text" class="form-control" name="' + key + '" id="' + key + '" value="">\n';
+                }
+
+                if (methods[name]['parameters'][key]['type'] === 'password') {
+                    html += '      <input type="password" class="form-control" name="' + key + '" id="' + key + '" value="">\n';
+                }
+
+                if (methods[name]['parameters'][key]['type'] === 'select') {
+                    html += '<select class="form-control" name="' + key + '" id="' + key + '">';
+
+                    for (var i in methods[name]['parameters'][key]['options']) {
+                        html += '<option value="' + methods[name]['parameters'][key]['options'][i]['value'] + '">' + methods[name]['parameters'][key]['options'][i]['text'] + '</option>';
+                    }
+
+                    html += '</select>';
+                }
+
+                html += '    </div>\n' +
                     '  </div>\n'
             }
 

@@ -51,16 +51,24 @@ class UserNode(Node):
             return False, 'List all users in the database', None
 
         if method_name == 'DETA':
+            options = [{'text': user['name'], 'value': user['id']} for user in self.users]
+
             return False, 'Show the details of a specific user', {
-                'id': {'text': 'User ID', 'required': True}
+                'id': {'text': 'User', 'required': True, 'type': 'select', 'options': options}
             }
 
         if method_name == 'ADDU':
+            options = [
+                {'text': 'Employee', 'value': 'Employee'},
+                {'text': 'Supervisor', 'value': 'Supervisor'},
+                {'text': 'Manager', 'value': 'Manager'}
+            ]
+
             return False, 'Add a user', {
-                'id': {'text': 'User ID', 'required': True},
-                'name': {'text': 'Name', 'required': True},
-                'username': {'text': 'Username', 'required': True},
-                'role': {'text': 'User Role', 'required': True}
+                'id': {'text': 'User ID', 'required': True, 'type': 'text'},
+                'name': {'text': 'Name', 'required': True, 'type': 'text'},
+                'username': {'text': 'Username', 'required': True, 'type': 'text'},
+                'role': {'text': 'User Role', 'required': True, 'type': 'select', 'options': options}
             }
 
         return True, '', None
@@ -95,6 +103,9 @@ class UserNode(Node):
         self.peerlock.acquire()
 
         data = json.loads(data)
+
+        if 'states' in data:
+            del data['states']
 
         self.users.append(data)
 

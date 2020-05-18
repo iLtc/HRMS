@@ -24,8 +24,8 @@ class LoginNode(Node):
         if method_name == 'LOGI':
             if 'user_token' not in data['states']:
                 return False, 'Allow a user to login', {
-                    'username': {'text': 'Username', 'required': True},
-                    'password': {'text': 'Password', 'required': True}
+                    'username': {'text': 'Username', 'required': True, 'type': 'text'},
+                    'password': {'text': 'Password', 'required': True, 'type': 'password'}
                 }
 
             else:
