@@ -42,7 +42,7 @@ To start the Login Node, use the following command. The `port_number` is optiona
 python3 login_node.py [port_number]
 ```
 
-### User Node
+#### User Node
 
 To start the User Node, use the following command. The `port_number` is optional with a default value of `9010`.
 
@@ -50,4 +50,28 @@ To start the User Node, use the following command. The `port_number` is optional
 python3 user_node.py [port_number]
 ```
 
-### 
+#### Attendance Node
+
+To start the Attendance Node, use the following command. The `port_number` is optional with a default value of `9020`.
+
+```
+python3 attendance_node.py [port_number]
+```
+
+#### Payroll Node
+
+To start the Payroll Node, use the following command. The `port_number` is optional with a default value of `9030`.
+
+```
+python3 payroll_node.py [port_number]
+```
+
+### Client Node
+
+To start the Client Node, use the following command.
+
+```
+python3 app.py
+```
+
+And then visit [http://127.0.0.1:5000/](http://127.0.0.1:5000/) to see the web interface.
