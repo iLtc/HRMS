@@ -31,3 +31,23 @@ To start the Central Node, use the following command.
 ```
 python3 central_server.py
 ```
+
+### Service Node
+
+#### Login Node
+
+To start the Login Node, use the following command. The `port_number` is optional with a default value of `9001`.
+
+```
+python3 login_node.py [port_number]
+```
+
+### User Node
+
+To start the User Node, use the following command. The `port_number` is optional with a default value of `9010`.
+
+```
+python3 user_node.py [port_number]
+```
+
+### 
